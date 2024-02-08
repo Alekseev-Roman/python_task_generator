@@ -1,0 +1,6 @@
+{
+	"host": "localhost",
+	"database": "cs_labworks",
+	"user": "postgres",
+	"password": "postgres"
+}
