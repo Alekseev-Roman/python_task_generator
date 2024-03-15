@@ -32,12 +32,7 @@
       <text>Your answer is incorrect.</text>
     </incorrectfeedback>
     <shownumcorrect/>
-    <answer fraction="{{answerfraction}}" format="html">
-      <text><![CDATA[{{answer}}]]></text>
-      <feedback format="html">
-        <text></text>
-      </feedback>
-    </answer>
+    {{answer}}
   </question>
 
 </quiz>

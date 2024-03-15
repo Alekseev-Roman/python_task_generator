@@ -63,23 +63,7 @@
     <filenamesexplain></filenamesexplain>
     <displayfeedback>1</displayfeedback>
     <testcases>
-      <testcase testtype="0" useasexample="{{useasexample}}" hiderestiffail="1" mark="1.0000000" >
-      <testcode>
-                <text>{{test_code}}</text>
-      </testcode>
-      <stdin>
-                <text></text>
-      </stdin>
-      <expected>
-                <text>{{expected}}</text>
-      </expected>
-      <extra>
-                <text></text>
-      </extra>
-      <display>
-                <text>SHOW</text>
-      </display>
-    </testcase>
+      {{testcase}}
     </testcases>
   </question>
 

@@ -2,7 +2,7 @@
 
 sudo -i -u postgres bash -c "
 psql -c \"\connect cs_labworks\" -c \"
-INSERT INTO theme (theme_id, theme_name) VALUES
+INSERT INTO topic (topic_id, topic_name) VALUES
 	(0, 'Словари и списки'),
 	(1, 'Машина Тьюринга'),
 	(2, 'Представление вещетвенного числа в памяти');
@@ -10,7 +10,7 @@ INSERT INTO type (type_id, type_name) VALUES
 	(0, 'Выбор одного правильного ответа'),
 	(1, 'Выбор нескольких правильных ответов'),
 	(2, 'Написание кода');
-INSERT INTO task (task_id, theme_id, type_id, difficulty, question_name, question_text) VALUES
+INSERT INTO task (task_id, topic_id, type_id, difficulty, question_name, question_text) VALUES
 	(0, 0, 2, 1, 'first_question', 'first_question text'),
 	(1, 1, 0, 2, 'second_question', 'second_question text'),
 	(2, 2, 1, 3, 'thrid_question', 'thrid_question text');
