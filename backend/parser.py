@@ -7,6 +7,7 @@ import dataProcessor as dp
 class Parser:
     def __init__(self):
         self.data_processor = dp.DataProcessor()
+        self.data_processor.connecting_to_db()
 
     def open_and_read_file(self, root_dir, difficulty, topic, file, topics, types):
         task = {
@@ -36,6 +37,8 @@ class Parser:
                     'use_as_example': [testcases[i].attrib['useasexample']],
                     'test_code': [''] if testcases[i].find('testcode').find('text').text is None
                     else [testcases[i].find('testcode').find('text').text.replace('\'', '\'\'')],
+                    'stdin': [''] if testcases[i].find('stdin').find('text').text is None
+                    else [testcases[i].find('stdin').find('text').text.replace('\'', '\'\'')],
                     'expected': [''] if testcases[i].find('expected').find('text').text is None
                     else [testcases[i].find('expected').find('text').text.replace('\'', '\'\'')]
                 })
@@ -70,8 +73,6 @@ class Parser:
         }
         coderunners = {}
 
-        self.data_processor.connecting_to_db()
-
         for task_type in types:
             self.data_processor.insert_type(task_type)
         for topic in topics:
@@ -86,7 +87,7 @@ class Parser:
             if task is not None:
                 self.data_processor.insert_task(task)
 
-    def parse(self, root_dir="DB/tasks"):
+    def parse_directory(self, root_dir="DB/tasks"):
         tasks = {}
         topics = {}
         topic_id = 1
@@ -106,4 +107,56 @@ class Parser:
 
         self.insert(root_dir, tasks.values(), topics)
 
+    def parse_xml_dict(self, xml, topic_id, difficulty):
+        task = {
+            'topic_id': topic_id,
+            'difficulty': difficulty
+        }
+        types = {
+            'coderunner': [1],
+            'multichoice': [2]
+        }
+        coderunners = self.data_processor.get_coderunners()
 
+        task['type_id'] = [types[xml['quiz']['question']['@type']][0]]
+        task['question_name'] = [xml['quiz']['question']['name']['text']]
+        task['question_text'] = [xml['quiz']['question']['questiontext']['text'].replace('\'', '\'\'')]
+        if task['type_id'][0] == 1:
+            coderunner = xml['quiz']['question']['coderunnertype']
+            task['answer_preload'] = [''] if xml['quiz']['question']['answerpreload'] is None \
+                else [xml['quiz']['question']['answerpreload'].replace('\'', '\'\'')]
+            task['template_params'] = [''] if xml['quiz']['question']['templateparams'] is None \
+                else [xml['quiz']['question']['templateparams'].replace('\'', '\'\'')]
+            task['template'] = [''] if xml['quiz']['question']['template'] is None \
+                else [xml['quiz']['question']['template'].replace('\'', '\'\'')]
+            task['test_case'] = []
+            testcases = xml['quiz']['question']['testcases']['testcase']
+            for i in range(len(testcases)):
+                task['test_case'].append({
+                    'use_as_example': [testcases[i]['@useasexample']],
+                    'test_code': [''] if testcases[i]['testcode']['text'] is None
+                    else [testcases[i]['stdin']['text'].replace('\'', '\'\'')],
+                    'stdin': [''] if testcases[i]['testcode']['text'] is None
+                    else [testcases[i]['stdin']['text'].replace('\'', '\'\'')],
+                    'expected': [''] if testcases[i]['expected']['text'] is None
+                    else [testcases[i]['expected']['text'].replace('\'', '\'\'')]
+                })
+            if coderunner not in coderunners.values():
+                self.data_processor.insert_coderunner(coderunner)
+                coderunners = self.data_processor.get_coderunners()
+            coderunner_id = 0
+            for id in coderunners.keys():
+                if coderunner == coderunners[id]:
+                    coderunner_id = id
+                    break
+            task['coderunner_id'] = [coderunner_id]
+        elif task['type_id'][0] == 2:
+            task['penalty'] = [xml['quiz']['question']['penalty']]
+            task['answers'] = []
+            answers = xml['quiz']['question']['answer']
+            for i in range(len(answers)):
+                task['answers'].append({
+                    'answer_fraction': [answers[i]['@fraction']],
+                    'answer': [answers[i]['text'].replace('\'', '\'\'')]
+                })
+        self.data_processor.insert_task(task)

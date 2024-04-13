@@ -2,6 +2,7 @@ import click
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from waitress import serve
+import xmltodict
 
 import dataProcessor as dp
 import dynamicHelp as dh
@@ -87,7 +88,7 @@ def get_uniq_percentages():
 
 @app.route('/get-statistic', methods=['GET'])
 def get_statistic():
-    print('get_statistic')
+    return data_processor.get_topics_and_quantity_tasks()
 
 
 @app.route('/get-topics', methods=['GET'])
@@ -100,9 +101,16 @@ def get_coderunners():
     return data_processor.get_coderunners()
 
 
-@app.route('/import-task-from-file', methods=['GET'])
+@app.route('/import-task-from-file', methods=['GET', 'POST'])
 def import_task_from_file():
-    print('import_task_from_file')
+    topic_id = request.args.get('topic')
+    difficulty = request.args.get('difficulty')
+    xml_data = request.files['data']
+    content_dict = xmltodict.parse(xml_data)
+    pars = parser.Parser()
+    pars.parse_xml_dict(content_dict, topic_id, difficulty)
+
+    return '1'
 
 
 @app.route('/import-new-task', methods=['POST'])

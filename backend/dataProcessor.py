@@ -101,6 +101,9 @@ class DataProcessor:
         Get data from DataBase
         :return : flag True or False depending on result of getting data
         """
+        if self._conn is None:
+            self.connecting_to_db()
+
         self._tasks = pd.read_sql(
             f"SELECT * "
             f"FROM task "
@@ -152,6 +155,9 @@ class DataProcessor:
         Get data from DataBase by task ID
         :return : flag True or False depending on result of getting data
         """
+        if self._conn is None:
+            self.connecting_to_db()
+
         self._task = pd.read_sql(
             f"SELECT * "
             f"FROM task "
@@ -202,6 +208,9 @@ class DataProcessor:
         :return: List of types or None
         """
         try:
+            if self._conn is None:
+                self.connecting_to_db()
+
             coderunners = pd.read_sql(
                 f"SELECT * "
                 f"FROM coderunner_types;",
@@ -223,6 +232,9 @@ class DataProcessor:
         :return: Topics or None
         """
         try:
+            if self._conn is None:
+                self.connecting_to_db()
+
             self._topics = pd.read_sql(
                 f"SELECT * "
                 f"FROM topic;",
@@ -239,6 +251,9 @@ class DataProcessor:
         :return: False or True
         """
         try:
+            if self._conn is None:
+                self.connecting_to_db()
+
             self._types = pd.read_sql(
                 f"SELECT * "
                 f"FROM type;",
@@ -288,6 +303,36 @@ class DataProcessor:
         ).to_dict()['count'][0]
 
         return quantity
+
+    def get_topics_and_quantity_tasks(self):
+        """
+        Get topics and quantity tasks with these topics
+        :return: List with couples topic - quantity
+        """
+        if self._conn is None:
+            self.connecting_to_db()
+
+        rare_statistic = pd.read_sql(
+            f"SELECT topic.topic_id, topic_name, type.type_id, type.type_name, COUNT(task_id) as quantity "
+            f"FROM task "
+            f"JOIN topic ON task.topic_id = topic.topic_id "
+            f"JOIN type ON task.type_id = type.type_id "
+            f"GROUP BY topic.topic_id, topic_name, type.type_id, type_name;",
+            self._conn
+        ).to_dict()
+
+        statistic = []
+
+        for i in rare_statistic['topic_id']:
+            statistic.append({
+                'topic_id': rare_statistic['topic_id'][i],
+                'topic_name': rare_statistic['topic_name'][i],
+                'type_id': rare_statistic['type_id'][i],
+                'type_name': rare_statistic['type_name'][i],
+                'quantity': rare_statistic['quantity'][i]
+            })
+
+        return statistic
 
     def insert_topic(self, topic):
         """
@@ -351,65 +396,65 @@ class DataProcessor:
         """
         if not self._types:
             self.get_types()
-        try:
-            new_task_df = pd.DataFrame({
-                'topic_id': task['topic_id'],
-                'type_id': task['type_id'],
-                'difficulty': task['difficulty'],
-                'question_name': task['question_name'],
-                'question_text': task['question_text']
+        # try:
+        new_task_df = pd.DataFrame({
+            'topic_id': task['topic_id'],
+            'type_id': task['type_id'],
+            'difficulty': task['difficulty'],
+            'question_name': task['question_name'],
+            'question_text': task['question_text']
+        })
+        new_task_df.to_sql(name='task', con=self._conn, if_exists='append', index_label='task_id', index=False)
+        task_id = pd.read_sql(
+            f"SELECT task_id "
+            f"FROM task "
+            f"WHERE topic_id = {task['topic_id'][0]} AND type_id = {task['type_id'][0]} AND "
+            f"difficulty = {task['difficulty'][0]} AND question_name = '{task['question_name'][0]}';",
+            self._conn
+        )['task_id'].to_list()[-1]
+
+        self._type_id = task['type_id'][0]
+
+        if self.is_multichoice():
+            new_multichoice_task_df = pd.DataFrame({
+                'task_id': task_id,
+                'penalty': task['penalty']
             })
-            new_task_df.to_sql(name='task', con=self._conn, if_exists='append', index_label='task_id', index=False)
-            task_id = pd.read_sql(
-                f"SELECT task_id "
-                f"FROM task "
-                f"WHERE topic_id = {task['topic_id'][0]} AND type_id = {task['type_id'][0]} AND "
-                f"difficulty = {task['difficulty'][0]} AND question_name = '{task['question_name'][0]}';",
-                self._conn
-            )['task_id'].to_list()[-1]
-
-            self._type_id = task['type_id'][0]
-
-            if self.is_multichoice():
-                new_multichoice_task_df = pd.DataFrame({
+            new_multichoice_task_df.to_sql(name='multichoice_task', con=self._conn, if_exists='append',
+                                           index_label='task_id', index=False)
+            for answer in task['answers']:
+                new_multichoice_answer_df = pd.DataFrame({
                     'task_id': task_id,
-                    'penalty': task['penalty']
+                    'answer_fraction': answer['answer_fraction'],
+                    'answer': answer['answer']
                 })
-                new_multichoice_task_df.to_sql(name='multichoice_task', con=self._conn, if_exists='append',
-                                               index_label='task_id', index=False)
-                for answer in task['answers']:
-                    new_multichoice_answer_df = pd.DataFrame({
-                        'task_id': task_id,
-                        'answer_fraction': answer['answer_fraction'],
-                        'answer': answer['answer']
-                    })
-                    new_multichoice_answer_df.to_sql(name='multichoice_answer', con=self._conn, if_exists='append',
-                                                     index_label='multichoice_answer_id', index=False)
+                new_multichoice_answer_df.to_sql(name='multichoice_answer', con=self._conn, if_exists='append',
+                                                 index_label='multichoice_answer_id', index=False)
 
-            else:
-                new_coderunner_task_df = pd.DataFrame({
+        else:
+            new_coderunner_task_df = pd.DataFrame({
+                'task_id': task_id,
+                'template': task['template'],
+                'template_params': task['template_params'],
+                'answer_preload': task['answer_preload'],
+                'coderunner_id': task['coderunner_id']
+            })
+            new_coderunner_task_df.to_sql(name='coderunner_task', con=self._conn, if_exists='append',
+                                          index_label='task_id', index=False)
+            for test_case in task['test_case']:
+                new_test_case_df = pd.DataFrame({
                     'task_id': task_id,
-                    'template': task['template'],
-                    'template_params': task['template_params'],
-                    'answer_preload': task['answer_preload'],
-                    'coderunner_id': task['coderunner_id']
+                    'use_as_example': test_case['use_as_example'],
+                    'test_code': test_case['test_code'],
+                    'stdin': test_case['stdin'],
+                    'expected': test_case['expected']
                 })
-                new_coderunner_task_df.to_sql(name='coderunner_task', con=self._conn, if_exists='append',
-                                              index_label='task_id', index=False)
-                for test_case in task['test_case']:
-                    new_test_case_df = pd.DataFrame({
-                        'task_id': task_id,
-                        'use_as_example': test_case['use_as_example'],
-                        'test_code': test_case['test_code'],
-                        'expected': test_case['expected']
-                    })
-                    new_test_case_df.to_sql(name='test_case', con=self._conn, if_exists='append',
-                                            index_label='test_case_id', index=False)
+                new_test_case_df.to_sql(name='test_case', con=self._conn, if_exists='append',
+                                        index_label='test_case_id', index=False)
 
-        except Exception as error:
-            print(error)
-            return False
-
+        # except Exception as error:
+        #     print(error)
+        #     return False
         return True
 
     def is_multichoice(self):
@@ -491,10 +536,12 @@ class DataProcessor:
                 task['coderunner_type'] = self._coderunners[self._coderunner_task['coderunner_id']]
                 task['test_cases'] = {'use_as_example': [],
                                       'test_code': [],
+                                      'stdin': [],
                                       'expected': []}
                 for i in range(len(self._test_cases['test_code'])):
                     task['test_cases']['use_as_example'].append(self._test_cases['use_as_example'][i])
                     task['test_cases']['test_code'].append(self._test_cases['test_code'][i])
+                    task['test_cases']['stdin'].append(self._test_cases['stdin'][i])
                     task['test_cases']['expected'].append(self._test_cases['expected'][i])
 
             self._task_for_templater = task
@@ -535,10 +582,12 @@ class DataProcessor:
                 task['coderunner_type'] = self._coderunners[self._coderunner_task['coderunner_id']]
                 task['test_cases'] = {'use_as_example': [],
                                       'test_code': [],
+                                      'stdin': [],
                                       'expected': []}
                 for i in range(len(self._test_cases['test_code'])):
                     task['test_cases']['use_as_example'].append(self._test_cases['use_as_example'][i])
                     task['test_cases']['test_code'].append(self._test_cases['test_code'][i])
+                    task['test_cases']['stdin'].append(self._test_cases['stdin'][i])
                     task['test_cases']['expected'].append(self._test_cases['expected'][i])
 
             self._task_for_templater = task
@@ -653,6 +702,7 @@ class DataProcessor:
             test_cases.append({
                 'use_as_example': [test_case['use_as_example']],
                 'test_code': [test_case['test_code']],
+                'stdin': [test_case['stdin']],
                 'expected': [test_case['expected']]
             })
         task['test_case'] = test_cases
