@@ -1,0 +1,7 @@
+/task.xml
+/__pycache__
+/.venv
+/DB/tasks
+*.rar
+*.zip
+task_*.xml
