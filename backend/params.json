@@ -1,0 +1,7 @@
+{
+	"host": "localhost",
+	"database": "cs_labworks",
+	"username": "postgres",
+	"password": "postgres",
+	"drivername": "postgresql+psycopg2"
+}

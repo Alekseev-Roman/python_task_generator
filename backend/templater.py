@@ -1,5 +1,5 @@
 class Templater:
-    def __init__(self, file_name):
+    def __init__(self, file_name=''):
         """
         Initialize Templater
         :param file_name:
@@ -23,7 +23,7 @@ class Templater:
     def set_data(self, data):
         """
         Set data for filling templater later
-        :param data:
+        :param data: tuple of tasks
         :return:
         """
         self.data = data
@@ -92,3 +92,6 @@ class Templater:
 
         with open(name, 'w+') as file:
             file.write(self.template)
+
+    def fill_variant_template_file(self, name):
+        pass

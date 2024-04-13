@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+<!-- question: 4373  -->
+  <question type="coderunner">
+    <name>
+      <text>
+        lb3_task_6_3
+      </text>
+    </name>
+    <questiontext format="html">
+      <text>
+        <![CDATA[<p>Создайте класс <b>MyDict</b>, который наследуется от стандартного класса <b>dict</b> и переопределяет некоторые методы таким образом:</p><p></p><ul><li>метод <b>get(key)</b>, возвращает значение по ключу, если такой ключ есть и значение -- это строка, содержащая хотя бы одну заглавную букву, иначе возвращается <i>None</i>;</li><li>метод <b>copy()</b> возвращает копию словаря, в которую помещены только такие пары, где ключ -- это число, если таких ключей нет, то возвращается <i>None</i>;</li><li>при выводе объекта с помощью функции <b>print()</b> на экран выводятся сначала все ключи через запятую, затем -- ‘\n’, и потом -- все значения через запятую.</li></ul><p></p><p><b>Циклы использовать нельзя</b>, только функциональное программирование (zip, map, filter, lambda)!</p><p>Никаких дополнительных действий, кроме реализации класса, выполнять не нужно.</p>]]>
+      </text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+    <coderunnertype>
+        python3
+    </coderunnertype>
+    <prototypetype>0</prototypetype>
+    <allornothing>1</allornothing>
+    <penaltyregime>0</penaltyregime>
+    <precheck>0</precheck>
+    <showsource>0</showsource>
+    <answerboxlines>18</answerboxlines>
+    <answerboxcolumns>100</answerboxcolumns>
+    <answerpreload>
+        class MyDict():
+    pass
+    </answerpreload>
+    <globalextra></globalextra>
+    <useace></useace>
+    <resultcolumns></resultcolumns>
+    <template>
+        <![CDATA[import subprocess, sys
+
+# Write the student code to a file prog.c
+lines = """{{ STUDENT_ANSWER | e('py') }}"""
+
+if ('for ' in lines) or ('while ' in lines):
+    raise Exception('Циклы использовать нельзя!')
+
+with open("prog.py", "w") as src:
+    print(r"""with open(__file__) as f: sourceT = f.read()
+if sourceT.count('__file__') > 2 or sourceT.count('raise') > 11:
+    raise Exception("Вы не решили задачу.")""", file=src)
+    print(lines, file=src)
+    print(r"""# checker
+S = MyDict()
+
+if not isinstance(S, dict):
+    raise Exception ('Класс должен быть наследован от класса dict')
+    
+# этот цирк с a и b для того, что бы студенту не показывалась строка с литералами в случае исключения из-за количества/типа аргументов    
+
+S = MyDict({'ar': 'a', 'n': 'B', '35y': 'cVF', '*': 'c', '1a': 'e', 200: 'd'})
+check = S.get('35y')
+corr = 'cVF'
+if check != corr:
+    raise Exception ('Проблемы с методом get')
+
+check = S.get('ar')
+corr = None
+if check != corr:
+    raise Exception ('Проблемы с методом get')
+
+check = S.get('m')
+corr = None
+if check != corr:
+    raise Exception ('Проблемы с методом get')
+
+    
+S = MyDict({'ar': 'a', 32: 'Bjk', '35y': 'cVF', '*': 'c', '1a': 'e', 200: 'd'})
+check = S.copy()
+corr = {32: 'Bjk', 200: 'd'}
+if check != corr:
+    raise Exception ('Проблемы с методом copy')
+
+S = MyDict({'ar': 'a', 'dk': 'Bjk', '35y': 'cVF', '*': 'c', '1a': 'e', 'ds': 'd'})
+check = S.copy()
+corr = None
+if check != corr:
+    raise Exception ('Проблемы с методом copy')    
+    
+    
+S = MyDict({'ar': 'a', 'dk': 'Bjk', '35y': 'cVF', '*': 'c', '1a': 'e', 'ds': 'd'})
+corr = 'ar,dk,35y,*,1a,ds\na,Bjk,cVF,c,e,d'
+try:
+    s = S.__str__()
+except AttributeError:
+    raise Exception ('Проблемы с выводом на экран')
+if s != corr:
+    raise Exception ('Проблемы с выводом на экран')
+    
+print(S)  
+""", file=src)
+
+try:
+    output = subprocess.check_output(["python3", "prog.py"], input="""{{TEST.stdin}}""", universal_newlines=True).strip()
+    correct_output = """{{TEST.expected}}""".strip()
+    if output == correct_output:
+        print(correct_output)
+    else:
+        print('Wrong answer')
+except subprocess.CalledProcessError as e:
+    if e.returncode > 0:
+        # Ignore non-zero positive return codes
+        if e.output:
+            print(e.output)
+    else:
+        # But negative return codes are signals - abort
+        if e.output:
+            print(e.output, file=sys.stderr)
+        if e.returncode < 0:
+            print("Task failed with signal", -e.returncode, file=sys.stderr)
+        print("** Further testing aborted **", file=sys.stderr)]]>
+    </template>
+    <iscombinatortemplate></iscombinatortemplate>
+    <allowmultiplestdins></allowmultiplestdins>
+    <answer></answer>
+    <validateonsave>1</validateonsave>
+    <testsplitterre></testsplitterre>
+    <language></language>
+    <acelang></acelang>
+    <sandbox></sandbox>
+    <grader></grader>
+    <cputimelimitsecs></cputimelimitsecs>
+    <memlimitmb></memlimitmb>
+    <sandboxparams></sandboxparams>
+    <templateparams>
+        <![CDATA[]]>
+    </templateparams>
+    <hoisttemplateparams>1</hoisttemplateparams>
+    <twigall>0</twigall>
+    <uiplugin></uiplugin>
+    <attachments>0</attachments>
+    <attachmentsrequired>0</attachmentsrequired>
+    <maxfilesize>10240</maxfilesize>
+    <filenamesregex></filenamesregex>
+    <filenamesexplain></filenamesexplain>
+    <displayfeedback>1</displayfeedback>
+    <testcases>
+      <testcase testtype="0" useasexample="[False]" hiderestiffail="1" mark="1.0000000" >
+    <testcode>
+        <text>['#1']</text>
+    </testcode>
+    <stdin>
+        <text></text>
+    </stdin>
+    <expected>
+        <text>['ar,dk,35y,*,1a,ds\na,Bjk,cVF,c,e,d']</text>
+    </expected>
+    <extra>
+        <text></text>
+    </extra>
+    <display>
+        <text>SHOW</text>
+    </display>
+
+    </testcases>
+  </question>
+
+</quiz>
