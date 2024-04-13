@@ -42,15 +42,15 @@
       <b-card v-for="answer in answers" :key="answer._id" class="mt-3">
         <label class="text">Пример</label>
         <textarea class="form-control" rows="5"
-                  v-model="answer.example"
+                  v-model="answer.test_code"
         ></textarea>
-<!--        <label class="text">Ввод</label>-->
-<!--        <textarea class="form-control" rows="5"-->
-<!--                  v-model="answer.input"-->
-<!--        ></textarea>-->
+        <label class="text">Ввод</label>
+        <textarea class="form-control" rows="5"
+                  v-model="answer.stdin"
+        ></textarea>
         <label class="text">Результат</label>
         <textarea class="form-control" rows="5"
-                  v-model="answer.result"
+                  v-model="answer.expected"
         ></textarea>
         <div class="mt-3 d-flex flex-grow-1 justify-content-between">
           <div class="mt-3 d-flex flex-grow-1 justify-content-left">
@@ -138,10 +138,10 @@ export default class NewCoderunnerTaskCard extends Vue {
     this.$props.task['coderunner_id'] = this.selected_coderunner_type
     this.$props.task['answer_preload'] = [this.answer_preload]
     this.$props.task['test_case'] = this.answers
+    await importTask(this.$props.task)
   }
 
   private async submitForm() {
-    console.log(111111)
     await this.importTask()
   }
 }

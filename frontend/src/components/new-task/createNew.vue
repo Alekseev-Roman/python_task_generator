@@ -17,11 +17,11 @@
           <input class="form-control ml-5" v-model="task.question_name[0]"
           @change="checkName"/>
         </div>
-        <div>
-          <label class="red-text" v-if="check_result">
-            Задача с таким названием уже существует
-          </label>
-        </div>
+<!--        <div>-->
+<!--          <label class="red-text" v-if="check_result">-->
+<!--            Задача с таким названием уже существует-->
+<!--          </label>-->
+<!--        </div>-->
         <div v-if="task.type_id == 1">
           <NewCoderunnerTaskCard :task="task" />
         </div>

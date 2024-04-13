@@ -62,7 +62,8 @@
                    v-if="task.difficulty[0] && task.topic_id[0]"
             >
             <button class="custom-button text" @click="download"
-                    v-b-tooltip type="submit">Загрузить файл
+                    v-b-tooltip type="submit">
+              Загрузить файл
             </button>
             <button class="ml-2 custom-button text"
                     @click="task.difficulty[0] && task.topic_id[0] ?
@@ -125,9 +126,6 @@ export default class NewTask extends Vue {
 
   private difficulties = difficulties
 
-  private selectedDifficulties = null
-  private selectedTopic = null
-
   private task = {
     type_id: [],
     difficulty: [],
@@ -155,12 +153,12 @@ export default class NewTask extends Vue {
   }
 
   private importFile( event: any ) {
-    downloadData( event.target.files[ 0 ] )
+    downloadData( event.target.files[ 0 ], this.task.topic_id[0], this.task.difficulty[0])
   }
 
   private download() {
     this.creating = false
-    document.getElementById( 'importFile' )?.click();
+    document.getElementById( 'importFile' )?.click()
   }
 
   private async submitForm() {

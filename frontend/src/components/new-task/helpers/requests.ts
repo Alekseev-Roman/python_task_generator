@@ -1,8 +1,16 @@
 import axios from "axios";
 
-export const downloadData = ( file: any ) => {
+export const downloadData = ( file: any, topic_id: any, difficulty: any) => {
     const formData = new FormData()
     formData.append('data', file)
+    return axios
+        .post(`/backend/import-task-from-file?topic=${topic_id}&difficulty=${difficulty}`,
+            formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    return axios.get(`/backend/import-task-from-file`)
 }
 
 export const addTopic = async (topic_name: string) => {

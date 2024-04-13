@@ -45,8 +45,9 @@
         <textarea class="form-control" rows="5"
                   v-model="task.test_cases.test_code[index]" readonly
         ></textarea>
-<!--        <label class="text mt-2">Ввод</label>-->
-<!--        <textarea class="form-control" rows="5" readonly></textarea>-->
+        <label class="text mt-2">Ввод</label>
+        <textarea class="form-control" rows="5"
+                  v-model="task.test_cases.stdin[index]" readonly></textarea>
         <label class="text mt-2">Результат</label>
         <textarea class="form-control" rows="5"
                   v-model="task.test_cases.expected[index]" readonly
