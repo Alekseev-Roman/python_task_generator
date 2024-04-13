@@ -4,16 +4,25 @@
       <form class="container-vs text-center" @submit.prevent="submitForm">
         <div class="mt-3 d-flex flex-grow-1 justify-content-between">
           <span class="title-2">Тип</span>
-          <select class="form-select  ml-5" v-model="params.type" @change="getQuantityTasks" required>
-            <option v-for="type in types" :key="type._id" v-bind:value="type._id">{{type.type}}</option>
+          <select class="form-select  ml-5" v-model="params.type"
+                  @change="getQuantityTasks" required
+          >
+            <option v-for="type in types" :key="type._id"
+                    v-bind:value="type._id"
+            >
+              {{type.type}}
+            </option>
           </select>
         </div>
         <div class=" d-flex flex-grow-1 justify-content-between mt-3">
           <span class="title-2">Сложность</span>
-          <div v-for="difficulty in difficulties" :key="difficulty._id" class="form-check ml-5">
+          <div v-for="difficulty in difficulties" :key="difficulty._id"
+               class="form-check ml-5"
+          >
             <input
                 class="form-check-input" type="radio" name="radioDifficulty"
-                :value="difficulty.difficulty" id="radioDifficulty1" v-model="params.difficulty"
+                :value="difficulty.difficulty" id="radioDifficulty1"
+                v-model="params.difficulty"
                 required @change="getQuantityTasks"
             />
             <label class="form-check-label title-2" for="radioDifficulty1">
@@ -23,7 +32,9 @@
         </div>
         <div class=" d-flex flex-grow-1 justify-content-between mt-3">
           <span class="title-2">Тема</span>
-          <select class="form-select  ml-5" v-model="params.topic" @change="getQuantityTasks" required>
+          <select class="form-select  ml-5" v-model="params.topic"
+                  @change="getQuantityTasks" required
+          >
             <option v-for="topic in topicList" :key="topic._id"
                     v-bind:value="topic._id"
             >
@@ -31,12 +42,12 @@
             </option>
           </select>
         </div>
-        <div class=" d-flex flex-grow-1 justify-content-left mt-3">
-          <span class="text mr-3">Средняя уникальность подходящих задач: </span>
-          <span v-bind:class="[ task_match.mathPercent < 60 ? 'red-text' : 'text']">
-              {{task_match.mathPercent}} %
-            </span>
-        </div>
+<!--        <div class=" d-flex flex-grow-1 justify-content-left mt-3">-->
+<!--          <span class="text mr-3">Средняя уникальность подходящих задач: </span>-->
+<!--          <span v-bind:class="[ task_match.mathPercent < 60 ? 'red-text' : 'text']">-->
+<!--              {{task_match.mathPercent}} %-->
+<!--            </span>-->
+<!--        </div>-->
         <div class=" d-flex flex-grow-1 justify-content-left mt-3">
           <span class="text mr-3">Количество подходящих задач в теме: </span>
           <span v-bind:class="[ quantityTasks < 1 ? 'red-text' : 'text']">
@@ -50,7 +61,11 @@
           <div class="mt-3 justify-content-center">
             <span class="title-2 bold" >Сгенерированная задача: </span>
               <span class="text ml-3">{{task.question_name}}</span>
-            <button class="act-button w-text mt-3 ml-3 download-button" @click="downloadTask">Скачать</button>
+            <button class="act-button w-text mt-3 ml-3 download-button"
+                    @click="downloadTask"
+            >
+              Скачать
+            </button>
           </div>
             <div v-if="params.type == 1">
               <CoderunnerTaskCard v-bind:task="task" />
@@ -66,12 +81,15 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
-import CoderunnerTaskCard from "@/components/generate-task/coderunnerTaskCard.vue";
-import MultichoiceTaskCard from "@/components/generate-task/multichoiceTaskCard.vue";
+import CoderunnerTaskCard
+  from "@/components/generate-task/coderunnerTaskCard.vue";
+import MultichoiceTaskCard
+  from "@/components/generate-task/multichoiceTaskCard.vue";
 import {tasksMatch} from "@/types/check";
 import {difficulties, types} from "@/store";
 import {marked} from "marked";
-import {downloadTaskByID, fetchQuantityTask} from "@/components/generate-variant/helpers/requests";
+import {downloadTaskByID, fetchQuantityTask}
+  from "@/components/generate-variant/helpers/requests";
 
 @Component({
   components: {MultichoiceTaskCard, CoderunnerTaskCard},

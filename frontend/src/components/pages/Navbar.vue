@@ -5,7 +5,9 @@
         <span class="title-1">LabWorks Generator</span>
       </div>
       <b-button-group>
-        <button class="custom-button hover title-2 btn-link" @click="generateTask">
+        <button class="custom-button hover title-2 btn-link"
+                @click="generateTask"
+        >
           Сгенерировать задачу
         </button>
         <button class="custom-button title-2 btn-link" @click="generateVariant">

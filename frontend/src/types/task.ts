@@ -9,22 +9,22 @@ export interface Task {
   question_text: string
 }
 
+export interface Coderunner {
+  _id: string
+  name: string
+}
+
 export interface MultichoiceAnswer {
   _id: number
   answer_fraction: number
   answer: string
 }
 
-export interface CoderunnerTypes {
-  _id: number
-  name: string
-}
-
 export interface CoderunnerAnswer {
   _id: number
   example: string
-  input: string
-  result: string
+  test_code: string
+  expected: string
   use_as_example: boolean
 
 }

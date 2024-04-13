@@ -7,6 +7,13 @@ export const downloadTaskByID = async (task: any) => {
         .then(response => {saveAs(response.data, 'task.xml')})
 }
 
+export const downloadVariantByID = async (
+    task_1: any, task_2: any, task_3: any) => {
+    return await axios
+        .get(`/backend/export-variant?id-1=${task_1.task_id}&id-2=${task_2.task_id}&id-3=${task_3.task_id}`, {responseType: 'blob'})
+        .then(response => {saveAs(response.data, 'variant.zip')})
+}
+
 export const fetchVariant = async (params: any) => {
     const data = await axios
         .get(`/backend/generate-variant?type-1=${params[0].type}

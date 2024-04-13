@@ -6,7 +6,8 @@
   <div class="container justify-content-center align-middle">
     <div class="h-100 align-middle">
       <p class="title-2 text-center mt-5">
-        Быстро генерируйте задачи и варианты для защит лабораторных работ по информатике.
+        Быстро генерируйте задачи и варианты для защит
+        лабораторных работ по информатике.
       </p>
       <p class="title-1 text-center bold mt-10">
         Как использовать?

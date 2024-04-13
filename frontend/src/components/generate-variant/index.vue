@@ -34,7 +34,7 @@ import {fetchTopicAll} from "@/components/helpers/requests";
 import {Task, Topic} from "@/types/task";
 import MultichoiceTaskCard from "@/components/generate-task/multichoiceTaskCard.vue";
 import CoderunnerTaskCard from "@/components/generate-task/coderunnerTaskCard.vue";
-import {fetchVariant} from "@/components/generate-variant/helpers/requests";
+import {downloadVariantByID, fetchVariant} from "@/components/generate-variant/helpers/requests";
 
 @Component({
   components: {
@@ -73,7 +73,12 @@ export default class GenerateVariant extends Vue {
   }
 
   private async downloadVariant() {
-    //
+    console.log(this.variant[1], this.variant[2], this.variant[3])
+    await downloadVariantByID(
+        this.variant[1],
+        this.variant[2],
+        this.variant[3]
+    )
   }
 }
 </script>

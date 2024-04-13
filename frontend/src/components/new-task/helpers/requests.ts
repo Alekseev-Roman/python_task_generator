@@ -15,6 +15,19 @@ export const checkTopicInDB = async (topic_name: string) => {
     return data.data
 }
 
-export const fetchQuantityTask = async (topic_id: any, difficulty: any) => {
-    return 0
+export const checkNameInDB = async (task_name: string) => {
+    const data = await axios
+        .get(`/backend/check-name-in-db?name=${task_name}`)
+    return data.data
+}
+
+export const fetchQuantityTask = async (topic_id: any, difficulty: any)=> {
+    const data = await axios
+        .get(`/backend/get-quantity-tasks-topic-diff?difficulty=${difficulty}
+        &topic=${topic_id}`)
+    return data.data
+}
+
+export const importTask = async (task: object) => {
+    await axios.post('/backend/import-new-task', task)
 }

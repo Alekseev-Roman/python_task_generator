@@ -13,6 +13,7 @@ class Parser:
             'topic_id': topics[topic],
             'difficulty': [difficulty]
         }
+        coderunner = None
 
         parser = ET.XMLParser(encoding="utf-8")
         tree = ET.parse(f'{root_dir}/{difficulty}/{topic}/{file}', parser=parser)
@@ -21,7 +22,7 @@ class Parser:
         task['question_name'] = [root.find('question').find('name').find('text').text]
         task['question_text'] = [root.find('question').find('questiontext').find('text').text.replace('\'', '\'\'')]
         if task['type_id'][0] == 1:
-            task['coderunner_type'] = [root.find('question').find('coderunnertype').text]
+            coderunner = [root.find('question').find('coderunnertype').text][0]
             task['answer_preload'] = [''] if root.find('question').find('answerpreload').text is None \
                 else [root.find('question').find('answerpreload').text.replace('\'', '\'\'')]
             task['template_params'] = [''] if root.find('question').find('templateparams').text is None \
@@ -51,7 +52,7 @@ class Parser:
             print(f'Error in file {root_dir}/{difficulty}/{topic}/{file}. Not exist such type_id: {task["type_id"][0]}')
             return None
 
-        return task
+        return task, coderunner
 
     def finish_pushing(self, template):
         template.replace(',{{insert_task}}', ';')
@@ -62,20 +63,26 @@ class Parser:
 
         return template
 
-    def insert(self, root_dir, taskParams, topics):
+    def insert(self, root_dir, task_params, topics):
         types = {
             'coderunner': [1],
             'multichoice': [2]
         }
+        coderunners = {}
 
         self.data_processor.connecting_to_db()
 
-        for type in types:
-            self.data_processor.insert_type(type)
+        for task_type in types:
+            self.data_processor.insert_type(task_type)
         for topic in topics:
             self.data_processor.insert_topic(topic)
-        for params in taskParams:
-            task = self.open_and_read_file(root_dir, params[0], params[1], params[2], topics, types)
+        for params in task_params:
+            task, coderunner = self.open_and_read_file(root_dir, params[0], params[1], params[2], topics, types)
+            if coderunner is not None:
+                if coderunner not in coderunners:
+                    coderunners[coderunner] = len(coderunners.values()) + 1
+                    self.data_processor.insert_coderunner(coderunner)
+                task['coderunner_id'] = coderunners[coderunner]
             if task is not None:
                 self.data_processor.insert_task(task)
 

@@ -1,10 +1,11 @@
 import click
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, request, send_file
 from flask_cors import CORS
 from waitress import serve
 
 import dataProcessor as dp
 import dynamicHelp as dh
+import parser
 
 
 @click.command(cls=dh.DynamicHelp)
@@ -66,11 +67,17 @@ def generate_variant():
 
 @app.route('/get-quantity-tasks', methods=['GET'])
 def get_quantity_tasks():
-    taskType = request.args.get('type')
+    task_type = request.args.get('type')
     difficulty = request.args.get('difficulty')
     topic = request.args.get('topic')
+    return str(data_processor.get_quantity_tasks(topic, task_type, difficulty))
 
-    return str(data_processor.get_quantity_tasks(topic, taskType, difficulty))
+
+@app.route('/get-quantity-tasks-topic-diff', methods=['GET'])
+def get_quantity_tasks_topic_diff():
+    difficulty = request.args.get('difficulty')
+    topic = request.args.get('topic')
+    return str(data_processor.get_quantity_tasks_by_topic_diff(topic, difficulty))
 
 
 @app.route('/get-uniq-percentages', methods=['GET'])
@@ -88,6 +95,11 @@ def get_topics():
     return data_processor.get_topics()
 
 
+@app.route('/get-coderunners', methods=['GET'])
+def get_coderunners():
+    return data_processor.get_coderunners()
+
+
 @app.route('/import-task-from-file', methods=['GET'])
 def import_task_from_file():
     print('import_task_from_file')
@@ -95,14 +107,20 @@ def import_task_from_file():
 
 @app.route('/import-new-task', methods=['POST'])
 def import_task():
-    print('import_task')
+    task = request.json
+    task = data_processor.format_task(task)
+    res = data_processor.insert_task(task)
+    if res:
+        return '1'
+    else:
+        return '0'
 
 
 @app.route('/import-new-topic', methods=['POST'])
 def export_new_topic():
     topic = request.args.get('topic')
-    #data_processor.insert_topic(topic)
-    return "0"
+    data_processor.insert_topic(topic)
+    return '1'
 
 
 @app.route('/check-topic-in-db', methods=['GET'])
@@ -111,11 +129,26 @@ def check_topic_in_db():
     return f'{data_processor.check_topic(topic)}'
 
 
+@app.route('/check-name-in-db', methods=['GET'])
+def check_name_in_db():
+    name = request.args.get('name')
+    return f'{data_processor.check_name(name)}'
+
+
 @app.route('/export-task', methods=['GET'])
 def export_task():
     task_id = request.args.get('id')
     data_processor.create_and_fill_task_by_id(task_id)
     return send_file('./task.xml', mimetype='text/xml', as_attachment=True, download_name='task.xml')
+
+
+@app.route('/export-variant', methods=['GET'])
+def export_variant():
+    task_1_id = request.args.get('id-1')
+    task_2_id = request.args.get('id-2')
+    task_3_id = request.args.get('id-3')
+    data_processor.create_variant_by_id(task_1_id, task_2_id, task_3_id)
+    return send_file('./variant.zip', mimetype='text/xml', as_attachment=True, download_name='variant.zip')
 
 
 if __name__ == "__main__":

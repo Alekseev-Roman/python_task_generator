@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, URL
 import json
+import zipfile
 import sys
 
 import templater as tem
@@ -17,6 +18,7 @@ class DataProcessor:
         # Data
         self._topics = None
         self._types = None
+        self._coderunners = None
         self._tasks = None
         self._coderunner_task = None
         self._test_cases = None
@@ -71,6 +73,24 @@ class DataProcessor:
             f"SELECT COUNT(*) "
             f"FROM topic "
             f"WHERE topic_name = '{topic_name}';",
+            self._conn
+        ).to_dict()['count'][0]
+
+        return count
+
+    def check_name(self, name):
+        """
+        Check there is name in db or not
+        :param name: Name of task
+        :return: False if name is not in db and True if name is in db
+        """
+        if self._conn is None:
+            self.connecting_to_db()
+
+        count = pd.read_sql(
+            f"SELECT COUNT(*) "
+            f"FROM task "
+            f"WHERE question_name = '{name}';",
             self._conn
         ).to_dict()['count'][0]
 
@@ -176,9 +196,30 @@ class DataProcessor:
         print("Such task not exist")
         return False
 
+    def get_coderunners(self):
+        """
+        Get list of coderunner types
+        :return: List of types or None
+        """
+        try:
+            coderunners = pd.read_sql(
+                f"SELECT * "
+                f"FROM coderunner_types;",
+                self._conn
+            ).to_dict()
+
+            self._coderunners = dict(zip(
+                coderunners['coderunner_id'].values(),
+                coderunners['coderunner_name'].values()
+            ))
+
+            return self._coderunners
+        except:
+            return None
+
     def get_topics(self):
         """
-        Get topics from DB and save to self.topics
+        Get topics from DB and save to self._topics
         :return: Topics or None
         """
         try:
@@ -191,6 +232,62 @@ class DataProcessor:
             return dict(zip(self._topics['topic_id'].values(), self._topics['topic_name'].values()))
         except:
             return None
+
+    def get_types(self):
+        """
+        Get dictionary of types to self._types
+        :return: False or True
+        """
+        try:
+            self._types = pd.read_sql(
+                f"SELECT * "
+                f"FROM type;",
+                self._conn
+            ).to_dict()
+
+        except:
+            return False
+
+        return True
+
+    def get_quantity_tasks(self, topic, type_task, difficulty):
+        """
+        Get quantity of tasks with params
+        :param topic:
+        :param type_task:
+        :param difficulty:
+        :return: Int
+        """
+        if self._conn is None:
+            self.connecting_to_db()
+
+        quantity = pd.read_sql(
+            f"SELECT COUNT(*) "
+            f"FROM task "
+            f"WHERE topic_id = {topic} AND type_id = {type_task} AND difficulty = {difficulty};",
+            self._conn
+        ).to_dict()['count'][0]
+
+        return quantity
+
+    def get_quantity_tasks_by_topic_diff(self, topic, difficulty):
+        """
+        Get quantity of tasks with params without type of task
+        :param topic:
+        :param difficulty:
+        :return: Int
+        """
+        if self._conn is None:
+            self.connecting_to_db()
+
+        quantity = pd.read_sql(
+            f"SELECT COUNT(*) "
+            f"FROM task "
+            f"WHERE topic_id = {topic} AND difficulty = {difficulty};",
+            self._conn
+        ).to_dict()['count'][0]
+
+        return quantity
 
     def insert_topic(self, topic):
         """
@@ -226,37 +323,25 @@ class DataProcessor:
 
         return True
 
-    def get_types(self):
+    def insert_coderunner(self, coderunner_name):
         """
-        Get dictionary of types to self.types
-        :return: False or True
+        Insert coderunner name to DB
+        :param coderunner_name: Name of coderunner
+        :return: True or False
         """
         try:
-            self._types = pd.read_sql(
-                f"SELECT * "
-                f"FROM type;",
-                self._conn
-            ).to_dict()
+            new_coderunner_df = pd.DataFrame({
+                'coderunner_name': [coderunner_name]
+            })
+            new_coderunner_df.to_sql(
+                name='coderunner_types', con=self._conn, if_exists='append',
+                index_label='coderunner_id', index=False
+            )
 
         except:
             return False
 
         return True
-
-    def is_multichoice(self):
-        """
-        Check type of task
-        :return: True, if type is multichoice, False if type is coderunner
-        """
-        if self._types == {}:
-            self.get_types()
-
-        key = 0
-        for k in self._types['type_id']:
-            if self._types['type_id'][k] == self._type_id:
-                key = k
-
-        return True if self._types['type_name'][key] == 'multichoice' else False
 
     def insert_task(self, task):
         """
@@ -307,7 +392,7 @@ class DataProcessor:
                     'template': task['template'],
                     'template_params': task['template_params'],
                     'answer_preload': task['answer_preload'],
-                    'coderunner_type': task['coderunner_type']
+                    'coderunner_id': task['coderunner_id']
                 })
                 new_coderunner_task_df.to_sql(name='coderunner_task', con=self._conn, if_exists='append',
                                               index_label='task_id', index=False)
@@ -327,43 +412,48 @@ class DataProcessor:
 
         return True
 
+    def is_multichoice(self):
+        """
+        Check type of task
+        :return: True, if type is multichoice, False if type is coderunner
+        """
+        if self._types == {}:
+            self.get_types()
+
+        key = 0
+        for k in self._types['type_id']:
+            if int(self._types['type_id'][k]) == int(self._type_id):
+                key = k
+        return True if self._types['type_name'][key] == 'multichoice' else False
+
     def fill_template_of_task(self, name='task.xml'):
         """
-        Fill in the template of a task
+        Fill to the template of a task
         :return: File Moodle XML with a task
         """
         if self._task_id >= 0:
             if self.is_multichoice():
-                file_name = "multichoice_template.xml"
-            else:
-                file_name = "coderunner_template.xml"
-            templater = tem.Templater(f"./templates/{file_name}")
-            templater.set_data(self._task_for_templater)
-
-            if self.is_multichoice():
+                file_name = 'multichoice_template.xml'
+                templater = tem.Templater(f'./templates/{file_name}')
+                templater.set_data(self._task_for_templater)
                 templater.fill_multichoice_template_file(name)
             else:
+                file_name = 'coderunner_template.xml'
+                templater = tem.Templater(f'./templates/{file_name}')
+                templater.set_data(self._task_for_templater)
                 templater.fill_code_runner_template_file(name)
 
-    def get_quantity_tasks(self, topic, type_task, difficulty):
+    def fill_template_of_variant(self, task_1, task_2, task_3, name='variant.xml'):
         """
-        Get quantity of tasks with params
-        :param topic:
-        :param type_task:
-        :param difficulty:
-        :return: Int
+        Fill variant to the XML file
+        :param task_1:
+        :param task_2:
+        :param task_3:
+        :return:
         """
-        if self._conn is None:
-            self.connecting_to_db()
-
-        quantity = pd.read_sql(
-            f"SELECT COUNT(*) "
-            f"FROM task "
-            f"WHERE topic_id = {topic} AND type_id = {type_task} AND difficulty = {difficulty};",
-            self._conn
-        ).to_dict()['count'][0]
-
-        return quantity
+        # templater = tem.Templater()
+        # templater.set_data((task_1, task_2, task_3))
+        # templater.fill_variant_template_file(name)
 
     def create_task(self, topic, type_task, difficulty):
         """
@@ -394,10 +484,11 @@ class DataProcessor:
                     task['answers']['answer_fraction'].append(self._multichoice_answers['answer_fraction'][i])
                     task['answers']['answer'].append(self._multichoice_answers['answer'][i])
             else:
+                self.get_coderunners()
                 task['template'] = self._coderunner_task['template'].replace("''", "'")
                 task['template_params'] = self._coderunner_task['template_params']
                 task['answer_preload'] = self._coderunner_task['answer_preload']
-                task['coderunner_type'] = self._coderunner_task['coderunner_type']
+                task['coderunner_type'] = self._coderunners[self._coderunner_task['coderunner_id']]
                 task['test_cases'] = {'use_as_example': [],
                                       'test_code': [],
                                       'expected': []}
@@ -425,7 +516,8 @@ class DataProcessor:
             task_df_dict = self._task.iloc[0]
             task = {'question_name': task_df_dict['question_name'],
                     'question_text': task_df_dict['question_text'],
-                    'task_id': str(task_df_dict['task_id'])}
+                    'task_id': str(task_df_dict['task_id']),
+                    'type_id': str(task_df_dict['type_id'])}
 
             if self.is_multichoice():
                 task['penalty'] = self._multichoice_task['penalty']
@@ -436,10 +528,11 @@ class DataProcessor:
                     task['answers']['answer_fraction'].append(self._multichoice_answers['answer_fraction'][i])
                     task['answers']['answer'].append(self._multichoice_answers['answer'][i])
             else:
+                self.get_coderunners()
                 task['template'] = self._coderunner_task['template'].replace("''", "'")
                 task['template_params'] = self._coderunner_task['template_params']
                 task['answer_preload'] = self._coderunner_task['answer_preload']
-                task['coderunner_type'] = self._coderunner_task['coderunner_type']
+                task['coderunner_type'] = self._coderunners[self._coderunner_task['coderunner_id']]
                 task['test_cases'] = {'use_as_example': [],
                                       'test_code': [],
                                       'expected': []}
@@ -493,11 +586,16 @@ class DataProcessor:
 
                 if task_1 and task_2 and task_3:
                     self._type_id = var_params['task_1']['type']
-                    self.fill_template_of_task(task_1, 'task_1.xml')
+                    self._task_for_templater = task_1
+                    self.fill_template_of_task('task_1.xml')
+
                     self._type_id = var_params['task_2']['type']
-                    self.fill_template_of_task(task_2, 'task_2.xml')
+                    self._task_for_templater = task_2
+                    self.fill_template_of_task('task_2.xml')
+
                     self._type_id = var_params['task_3']['type']
-                    self.fill_template_of_task(task_3, 'task_3.xml')
+                    self._task_for_templater = task_3
+                    self.fill_template_of_task('task_3.xml')
 
             except Exception as e:
                 print("Error creating tasks, not enough data for creating in the file.")
@@ -505,3 +603,57 @@ class DataProcessor:
 
         except FileNotFoundError:
             print(f"File {path} for creating variant not found.")
+
+    def create_variant_by_id(self, task_1_id, task_2_id, task_3_id, name='variant.zip'):
+        """
+        Create variant with 3 task. Variant is saved to XML file
+        :param task_1_id: ID of task
+        :param task_2_id: ID of task
+        :param task_3_id: ID of task
+        :return: None
+        """
+        task_1 = self.create_task_by_id(task_1_id)
+        task_2 = self.create_task_by_id(task_2_id)
+        task_3 = self.create_task_by_id(task_3_id)
+
+        if not task_1:
+            print('Task 1 cannot be created. Change topic or type of this task.')
+        if not task_2:
+            print('Task 2 cannot be created. Change topic or type of this task.')
+        if not task_3:
+            print('Task 3 cannot be created. Change topic or type of this task.')
+
+        if task_1 and task_2 and task_3:
+            self._type_id = task_1['type_id']
+            self._task_for_templater = task_1
+            self.fill_template_of_task('task_1.xml')
+
+            self._type_id = task_2['type_id']
+            self._task_for_templater = task_2
+            self.fill_template_of_task('task_2.xml')
+
+            self._type_id = task_3['type_id']
+            self._task_for_templater = task_3
+            self.fill_template_of_task('task_3.xml')
+
+            with zipfile.ZipFile(name, mode="w") as archive:
+                archive.write('task_1.xml')
+                archive.write('task_2.xml')
+                archive.write('task_3.xml')
+
+    @staticmethod
+    def format_task(task):
+        """
+        Format task from dict of lists to list of dicts in test_case
+        :param task: task
+        :return: task
+        """
+        test_cases = []
+        for test_case in task['test_case']:
+            test_cases.append({
+                'use_as_example': [test_case['use_as_example']],
+                'test_code': [test_case['test_code']],
+                'expected': [test_case['expected']]
+            })
+        task['test_case'] = test_cases
+        return task

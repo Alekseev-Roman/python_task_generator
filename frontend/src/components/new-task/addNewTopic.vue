@@ -35,7 +35,8 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
-import { addTopic, checkTopicInDB } from "@/components/new-task/helpers/requests";
+import { addTopic, checkTopicInDB }
+  from "@/components/new-task/helpers/requests";
 
 @Component({})
 export default class AddNewTopic extends Vue {
