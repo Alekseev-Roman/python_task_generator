@@ -34,9 +34,9 @@ import {Vue, Component} from 'vue-property-decorator';
 
 @Component({})
 export default class AddByUrl extends Vue {
-  private taskUrl = ""
+  public taskUrl = ""
 
-  private async cancel() {
+  public async cancel() {
     //
   }
 }

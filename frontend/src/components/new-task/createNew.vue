@@ -17,16 +17,16 @@
           <input class="form-control ml-5" v-model="task.question_name[0]"
           @change="checkName"/>
         </div>
-<!--        <div>-->
-<!--          <label class="red-text" v-if="check_result">-->
-<!--            Задача с таким названием уже существует-->
-<!--          </label>-->
-<!--        </div>-->
+        <div>
+          <label class="red-text" v-if="check_result">
+            Задача с таким названием уже существует
+          </label>
+        </div>
         <div v-if="task.type_id == 1">
-          <NewCoderunnerTaskCard :task="task" />
+          <NewCoderunnerTaskCard :task="task" :check="check_result" />
         </div>
         <div v-if="task.type_id == 2">
-          <NewMultichoiceTaskCard :task="task" />
+          <NewMultichoiceTaskCard :task="task" :check="check_result" />
         </div>
       </b-card>
     </div>
@@ -51,11 +51,11 @@ import {checkNameInDB} from "@/components/new-task/helpers/requests";
   props: ['task']
 })
 export default class CreateNew extends Vue {
-  private types = types
-  private check_result = false
-  private topic_list: Topic[] = []
+  public types = types
+  public check_result = false
+  public topic_list: Topic[] = []
 
-  private async checkName() {
+  public async checkName() {
     this.check_result = await checkNameInDB(this.$props.task.question_name[0])
   }
 }

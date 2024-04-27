@@ -109,24 +109,24 @@ import {difficulties, types} from "@/store";
   }
 })
 export default class GenerateTask extends Vue {
-  private difficulties = difficulties
-  private types = types
+  public difficulties = difficulties
+  public types = types
 
-  private selectedType = null
-  private selectedDifficulties = null
-  private selectedTopic = null
+  public selectedType = null
+  public selectedDifficulties = null
+  public selectedTopic = null
 
-  private selectedData = {
+  public selectedData = {
     type: null,
     topic: null,
     difficulty: null
   }
 
-  private quantityTasks = null
+  public quantityTasks = null
 
-  private task_match: tasksMatch[] = []
-  private topicList: Topic[] = []
-  private task: Task[] = []
+  public task_match: tasksMatch[] = []
+  public topicList: Topic[] = []
+  public task: Task[] = []
 
 
   private async created() {
@@ -137,11 +137,11 @@ export default class GenerateTask extends Vue {
     this.topicList = await fetchTopicAll()
   }
 
-  private async downloadTask() {
+  public async downloadTask() {
     await downloadTaskByID(this.task)
   }
 
-  private async submitForm() {
+  public async submitForm() {
     this.selectedData.topic = this.selectedTopic
     this.selectedData.type = this.selectedType
     this.selectedData.difficulty = this.selectedDifficulties
@@ -149,7 +149,7 @@ export default class GenerateTask extends Vue {
         this.selectedType, this.selectedTopic, this.selectedDifficulties)
   }
 
-  private async getQuantityTasks() {
+  public async getQuantityTasks() {
     if (this.selectedTopic != null && this.selectedType != null
         && this.selectedDifficulties != null) {
       this.quantityTasks = await fetchQuantityTask(

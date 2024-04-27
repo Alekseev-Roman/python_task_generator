@@ -1,7 +1,8 @@
 {
-	"host": "localhost",
-	"database": "cs_labworks",
 	"username": "postgres",
 	"password": "postgres",
-	"drivername": "postgresql+psycopg2"
+	"host": "localhost",
+	"database": "cs_labworks",
+	"drivername": "postgresql+psycopg2",
+	"port": "5432"
 }

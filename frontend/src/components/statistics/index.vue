@@ -1,17 +1,22 @@
 <template>
   <div>
-    <b-table  hover :items="items" :fields="fields" class="text"></b-table>
+    <b-table
+        hover :items="items" :fields="fields"
+        class="text" @row-clicked="chooseTopic"
+    >
+    </b-table>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import {fetchStatistic} from "@/components/statistics/helpers/requests";
+import {Topics} from "@/types/task";
 
 
 @Component
 export default class Statistics extends Vue {
-  private fields = [
+  public fields = [
     {
       key: 'topic_name',
       label: 'Тема',
@@ -27,12 +32,15 @@ export default class Statistics extends Vue {
       label: 'Количество задач',
       sortable: true
     }]
-  private items = []
+  public items: Topics[] = []
 
   private async created() {
     this.items = await fetchStatistic()
   }
 
+  public chooseTopic(data: any) {
+    this.$router.push(`/topic?id=${data.topic_id}`)
+  }
 }
 </script>
 

@@ -71,14 +71,14 @@ def get_quantity_tasks():
     task_type = request.args.get('type')
     difficulty = request.args.get('difficulty')
     topic = request.args.get('topic')
-    return str(data_processor.get_quantity_tasks(topic, task_type, difficulty))
+    return str(data_processor.get_quantity_tasks(topic, difficulty, task_type))
 
 
 @app.route('/get-quantity-tasks-topic-diff', methods=['GET'])
 def get_quantity_tasks_topic_diff():
     difficulty = request.args.get('difficulty')
     topic = request.args.get('topic')
-    return str(data_processor.get_quantity_tasks_by_topic_diff(topic, difficulty))
+    return str(data_processor.get_quantity_tasks(topic, difficulty))
 
 
 @app.route('/get-uniq-percentages', methods=['GET'])
@@ -94,6 +94,32 @@ def get_statistic():
 @app.route('/get-topics', methods=['GET'])
 def get_topics():
     return data_processor.get_topics()
+
+
+@app.route('/get-topic-name-by-id', methods=['GET'])
+def get_topic_name_by_id():
+    topic_id = request.args.get('topic-id')
+    return data_processor.get_topic_name_by_id(topic_id)
+
+
+@app.route('/get-tasks-by-topic', methods=['GET'])
+def get_tasks_by_topic():
+    topic_id = request.args.get('topic-id')
+    return data_processor.get_tasks_by_topic(topic_id)
+
+
+@app.route('/delete-topic-by-id', methods=['POST'])
+def delete_topic_by_id():
+    topic_id = request.args.get('topic-id')
+    data_processor.delete_topic_by_id(topic_id)
+    return '1'
+
+
+@app.route('/get-task-name-by-id', methods=['POST'])
+def delete_task_by_id():
+    task_id = request.args.get('task-id')
+    data_processor.delete_task_by_id(task_id)
+    return '1'
 
 
 @app.route('/get-coderunners', methods=['GET'])
@@ -160,10 +186,7 @@ def export_variant():
 
 
 if __name__ == "__main__":
-    # parser = parser.Parser()
-    # parser.parse()
     # create_task_by_cli()
     data_processor = dp.DataProcessor()
-    data_processor.connecting_to_db()
     context = ('local.crt', 'local.key')
     serve(app, host="192.168.0.6", port=8088)

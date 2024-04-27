@@ -93,5 +93,3 @@ class Templater:
         with open(name, 'w+') as file:
             file.write(self.template)
 
-    def fill_variant_template_file(self, name):
-        pass
