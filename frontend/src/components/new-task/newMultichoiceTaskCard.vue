@@ -86,17 +86,17 @@ import {MultichoiceAnswer} from "@/types/task";
 import {importTask} from "@/components/new-task/helpers/requests";
 
 @Component({
-  props: ['task']
+  props: ['task', 'check']
 })
 export default class NewMultichoiceTaskCard extends Vue {
-  private answerNumbers = answerNumbers
-  private selectedAnswerNumber = 0
-  private question_text = ''
-  private penalty = 0.0
+  public answerNumbers = answerNumbers
+  public selectedAnswerNumber = 0
+  public question_text = ''
+  public penalty = 0.0
 
-  private answers: MultichoiceAnswer[] = []
+  public answers: MultichoiceAnswer[] = []
 
-  private newAnswer() {
+  public newAnswer() {
     this.answers.push(
         {
           _id: this.answers.length == 0 ? 0 :
@@ -107,7 +107,7 @@ export default class NewMultichoiceTaskCard extends Vue {
     )
   }
 
-  private deleteAnswer( item: MultichoiceAnswer ) {
+  public deleteAnswer( item: MultichoiceAnswer ) {
     this.answers.splice(this.answers.indexOf(item), 1)
   }
 
@@ -118,8 +118,10 @@ export default class NewMultichoiceTaskCard extends Vue {
     await importTask(this.$props.task)
   }
 
-  private async submitForm() {
-    await this.importTask()
+  public async submitForm() {
+    if (!this.$props.check) {
+      await this.importTask()
+    }
   }
 }
 </script>

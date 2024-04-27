@@ -1,10 +1,10 @@
 import click
-import json
 import pandas as pd
-from sqlalchemy import create_engine, URL
-
 from click import Context, HelpFormatter
 from typing import Optional
+
+from dbConnector import DbConnector
+
 
 class DynamicHelp(click.Command):
     def __init__(self, name: Optional[str], callback='', params='', help=''):
@@ -19,37 +19,13 @@ class DynamicHelp(click.Command):
         self._topics_list = []
         self._types_list = []
 
-        self._conn = None
-        self._conn_params_dic = None
+        self.__connector = DbConnector(params)
+        self.__conn = DbConnector().connecting_to_db()
 
         self._max_len = 0
 
         self.get_max_len()
         self.get_data()
-
-    def read_connect_data(self):
-        """
-        Read data for connecting to DB from file params.json
-        :return: None
-        """
-        try:
-            with open('params.json', 'r') as file:
-                self._conn_params_dic = json.loads(file.read())
-        except FileNotFoundError:
-            print("File params.json not found.")
-
-    def connecting_to_db(self):
-        """
-        Connect to the DataBase and return the connection
-        :return conn:
-        """
-        try:
-            url_obj = URL.create(**self._conn_params_dic)
-            self._conn = create_engine(url_obj)
-        except Exception as error:
-            print("Can't connect to DB")
-            print(error)
-        return self._conn
 
     def get_max_len(self):
         for param in self._params:
@@ -59,13 +35,10 @@ class DynamicHelp(click.Command):
                 self._max_len = len(str(param.type)) + 2
 
     def get_data(self):
-        self.read_connect_data()
-        self.connecting_to_db()
-
         self._types_dict = pd.read_sql(
             f"SELECT * "
             f"FROM type;",
-            self._conn
+            self.__conn
         ).to_dict()
         for i in range(len(self._types_dict['type_id'])):
             self._types_list.append(f"{self._types_dict['type_id'][i]} - {self._types_dict['type_name'][i]}")
@@ -73,7 +46,7 @@ class DynamicHelp(click.Command):
         self._topics_dict = pd.read_sql(
             f"SELECT * "
             f"FROM topic;",
-            self._conn
+            self.__conn
         ).to_dict()
         for i in range(len(self._topics_dict['topic_id'])):
             self._topics_list.append(f"{self._topics_dict['topic_id'][i]} - {self._topics_dict['topic_name'][i]}")

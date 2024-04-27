@@ -37,5 +37,5 @@ export const fetchQuantityTask = async (topic_id: any, difficulty: any)=> {
 }
 
 export const importTask = async (task: object) => {
-    await axios.post('/backend/import-new-task', task)
+    return await (await axios.post('/backend/import-new-task', task)).data
 }

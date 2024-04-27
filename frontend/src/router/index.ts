@@ -28,6 +28,16 @@ const routes: Array<RouteConfig> = [
     path: '/statistics',
     name: 'statistics',
     component: () => import('../components/statistics/index.vue'),
+  },
+  {
+    path: '/topic',
+    name: 'topic',
+    component: () => import('../components/topic/index.vue'),
+  },
+  {
+    path: '/*',
+    name: 'not-found',
+    component: () => import('../components/not-found/index.vue'),
   }
 ]
 

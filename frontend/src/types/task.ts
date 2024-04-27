@@ -3,6 +3,14 @@ export interface Topic {
   name: string
 }
 
+export interface Topics {
+  topic_id: string
+  topic_name: string
+  quantity: string
+  type_id: string
+  type_name: string
+}
+
 export interface Task {
   task_id: number
   question_name: string

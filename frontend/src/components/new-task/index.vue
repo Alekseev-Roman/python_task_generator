@@ -117,16 +117,16 @@ export default class NewTask extends Vue {
     difficulty: null
   }
 
-  private types = types
-  private task_match: tasksMatch[] = []
-  private topic_list: Topic[] = []
-  private creating = false
+  public types = types
+  public task_match: tasksMatch[] = []
+  public topic_list: Topic[] = []
+  public creating = false
 
-  private quantityTasks = 0
+  public quantityTasks = 0
 
-  private difficulties = difficulties
+  public difficulties = difficulties
 
-  private task = {
+  public task = {
     type_id: [],
     difficulty: [],
     topic_id: [],
@@ -138,10 +138,18 @@ export default class NewTask extends Vue {
     await this.getAllTopics()
   }
 
+  private async mounted() {
+    this.$on('reload', this.reload);
+  }
+
   public async getAllTopics() {
     this.topic_list = await fetchTopicAll()
   }
 
+  private reload() {
+    console.log(1111)
+    this.$forceUpdate()
+  }
 
   public async getQuantityTasks() {
     if (this.task.topic_id[0] != null && this.task.difficulty[0] != null) {
@@ -152,16 +160,20 @@ export default class NewTask extends Vue {
     }
   }
 
-  private importFile( event: any ) {
-    downloadData( event.target.files[ 0 ], this.task.topic_id[0], this.task.difficulty[0])
+  public importFile( event: any ) {
+    downloadData(
+        event.target.files[ 0 ],
+        this.task.topic_id[0],
+        this.task.difficulty[0]
+    )
   }
 
-  private download() {
+  public download() {
     this.creating = false
     document.getElementById( 'importFile' )?.click()
   }
 
-  private async submitForm() {
+  public async submitForm() {
     this.selectedData.topic = this.task.topic_id[0]
     this.selectedData.difficulty = this.task.difficulty[0]
   }

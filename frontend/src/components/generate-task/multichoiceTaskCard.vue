@@ -51,10 +51,10 @@ import {marked} from "marked";
   props: ['task']
 })
 export default class MultichoiceTaskCard extends Vue {
-  private answerNumbers = answerNumbers
-  private selectedAnswerNumber = 0
+  public answerNumbers = answerNumbers
+  public selectedAnswerNumber = 0
 
-  private markdownToHtml(text: string) {
+  public markdownToHtml(text: string) {
     if (text != null) {
       return marked(text)
     }

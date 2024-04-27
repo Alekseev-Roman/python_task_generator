@@ -40,11 +40,11 @@ import { addTopic, checkTopicInDB }
 
 @Component({})
 export default class AddNewTopic extends Vue {
-  private topicName = ""
-  private checkingResult = "0"
-  private canAdd = false
+  public topicName = ""
+  public checkingResult = "0"
+  public canAdd = false
 
-  private async checkTopicName() {
+  public async checkTopicName() {
     if (this.topicName != "") {
       this.checkingResult = await checkTopicInDB(this.topicName)
       if (this.checkingResult == "0") {
@@ -53,7 +53,7 @@ export default class AddNewTopic extends Vue {
     }
   }
 
-  private async addTopic() {
+  public async addTopic() {
     await this.checkTopicName()
     if (this.checkingResult == "0" && this.topicName != "") {
       await addTopic(this.topicName)
@@ -63,7 +63,7 @@ export default class AddNewTopic extends Vue {
     }
   }
 
-  private close() {
+  public close() {
     this.checkingResult = "0"
     this.topicName = ""
     this.canAdd = false

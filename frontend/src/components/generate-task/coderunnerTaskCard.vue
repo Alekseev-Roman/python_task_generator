@@ -70,7 +70,7 @@ import {marked} from "marked";
   props: ['task'],
 })
 export default class CoderunnerTaskCard extends Vue {
-  private markdownToHtml(question_text: string) {
+  public markdownToHtml(question_text: string) {
     if (question_text != null) {
       return marked(question_text)
     }

@@ -93,18 +93,18 @@ import {importTask} from "@/components/new-task/helpers/requests";
 import {fetchCoderunnerAll} from "@/components/helpers/requests";
 
 @Component({
-  props: ['task']
+  props: ['task', 'check']
 })
 export default class NewCoderunnerTaskCard extends Vue {
-  private selected_coderunner_type = null
-  private question_text = ''
-  private template_params = ''
-  private template = ''
-  private answer_preload = ''
+  public selected_coderunner_type = null
+  public question_text = ''
+  public template_params = ''
+  public template = ''
+  public answer_preload = ''
 
-  private coderunners_list: Coderunner[] = []
+  public coderunners_list: Coderunner[] = []
 
-  private answers: CoderunnerAnswer[] = []
+  public answers: CoderunnerAnswer[] = []
 
   private async created() {
     await this.getAllCoderunnerTypes()
@@ -114,7 +114,7 @@ export default class NewCoderunnerTaskCard extends Vue {
     this.coderunners_list = await fetchCoderunnerAll()
   }
 
-  private newAnswer() {
+  public newAnswer() {
     this.answers.push(
         {
           _id: this.answers.length == 0 ? 0 :
@@ -127,7 +127,7 @@ export default class NewCoderunnerTaskCard extends Vue {
     )
   }
 
-  private deleteAnswer( item: CoderunnerAnswer ) {
+  public deleteAnswer( item: CoderunnerAnswer ) {
     this.answers.splice(this.answers.indexOf(item), 1)
   }
 
@@ -138,11 +138,15 @@ export default class NewCoderunnerTaskCard extends Vue {
     this.$props.task['coderunner_id'] = this.selected_coderunner_type
     this.$props.task['answer_preload'] = [this.answer_preload]
     this.$props.task['test_case'] = this.answers
-    await importTask(this.$props.task)
+    if (await importTask(this.$props.task) == '1') {
+      this.$emit('reload')
+    }
   }
 
-  private async submitForm() {
-    await this.importTask()
+  public async submitForm() {
+    if (!this.$props.check) {
+      await this.importTask()
+    }
   }
 }
 </script>
