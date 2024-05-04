@@ -20,7 +20,8 @@
 ```python3 ./backend/parse.py```
 4. Для запуска backend части приложения запустите Python-скрипт *main.py* <br>
 ```python3 ./backend/main.py```
-5. Для запуска frontend части введите следующие команды:<br>
+5. Для запуска frontend части в отдельном окне терминала введите следующие команды:<br>
+```cd ./frontend```<br>
 ```npm run install```<br>
 ```npm run serve```
 
