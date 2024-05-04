@@ -25,5 +25,6 @@
 ```npm run install```<br>
 ```npm run serve```
 
-<br>
+<br><br>
 После запуска web-интерфейс будет доступен по адрессу `localhost:1024`
+
