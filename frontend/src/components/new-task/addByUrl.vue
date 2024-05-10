@@ -1,6 +1,6 @@
 <template>
   <b-modal title="Добавление по ссылке" id="add-by-url"
-           @cancel="cancel" @close="cancel" centered
+           @cancel="cancel" @close="cancel" @ok="addTask" centered
   >
     <div class="form-group">
       <label for="inputTaskUrl" class="title-2">
@@ -31,13 +31,24 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
+import {importTaskByUrl} from "@/components/new-task/helpers/requests";
 
-@Component({})
+@Component({
+  props: ['task']
+})
 export default class AddByUrl extends Vue {
   public taskUrl = ""
 
   public async cancel() {
-    //
+    this.taskUrl = ""
+  }
+
+  public async addTask() {
+    await importTaskByUrl(
+        this.$props.task.topic_id, this.$props.task.difficulty, this.taskUrl
+    )
+    this.taskUrl = ""
+    this.$router.go(0)
   }
 }
 </script>

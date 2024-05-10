@@ -140,6 +140,7 @@ export default class NewCoderunnerTaskCard extends Vue {
     this.$props.task['test_case'] = this.answers
     if (await importTask(this.$props.task) == '1') {
       this.$emit('reload')
+      this.$router.go(0)
     }
   }
 

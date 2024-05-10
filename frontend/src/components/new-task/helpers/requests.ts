@@ -39,3 +39,12 @@ export const fetchQuantityTask = async (topic_id: any, difficulty: any)=> {
 export const importTask = async (task: object) => {
     return await (await axios.post('/backend/import-new-task', task)).data
 }
+
+export const importTaskByUrl = async (
+    topic_id: any, difficulty: any, url: string
+) => {
+    await axios.post(
+        `/backend/import-new-task-by-url?difficulty=${difficulty}
+        &topic=${topic_id}`, {'url': url}
+    )
+}

@@ -7,7 +7,6 @@ import dataProcessor as dp
 class Parser:
     def __init__(self):
         self.data_processor = dp.DataProcessor()
-        self.data_processor.connecting_to_db()
 
     def open_and_read_file(self, root_dir, difficulty, topic, file, topics, types):
         task = {

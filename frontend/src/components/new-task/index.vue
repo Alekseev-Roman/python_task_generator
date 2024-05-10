@@ -86,7 +86,7 @@
         <CreateNew :task="task" />
       </div>
     </div>
-    <AddByUrl />
+    <AddByUrl :task="task"/>
     <AddNewTopic />
   </div>
 </template>

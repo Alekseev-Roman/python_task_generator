@@ -60,6 +60,7 @@ export default class AddNewTopic extends Vue {
       this.checkingResult = "0"
       this.topicName = ""
       this.canAdd = false
+      this.$router.go(0)
     }
   }
 

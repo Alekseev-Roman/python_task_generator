@@ -115,7 +115,10 @@ export default class NewMultichoiceTaskCard extends Vue {
     this.$props.task['question_text'] = [this.question_text]
     this.$props.task['penalty'] = this.penalty
     this.$props.task['answers'] = this.answers
-    await importTask(this.$props.task)
+    if (await importTask(this.$props.task) == '1') {
+      this.$emit('reload')
+      this.$router.go(0)
+    }
   }
 
   public async submitForm() {

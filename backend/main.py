@@ -7,6 +7,7 @@ import xmltodict
 import dataProcessor as dp
 import dynamicHelp as dh
 import parser
+import moodleAPI
 
 
 @click.command(cls=dh.DynamicHelp)
@@ -150,6 +151,21 @@ def import_task():
         return '0'
 
 
+@app.route('/import-new-task-by-url', methods=['POST'])
+def import_task_by_url():
+    url = request.json['url']
+    moodle_api = moodleAPI.MoodleAPI()
+    moodle_api.login()
+    task = moodle_api.get_task_from_moodle(url)
+    task['topic_id'] = [request.args.get('topic')]
+    task['difficulty'] = [request.args.get('difficulty')]
+    res = data_processor.insert_task(task)
+    if res:
+        return '1'
+    else:
+        return '0'
+
+
 @app.route('/import-new-topic', methods=['POST'])
 def export_new_topic():
     topic = request.args.get('topic')
@@ -189,4 +205,4 @@ if __name__ == "__main__":
     # create_task_by_cli()
     data_processor = dp.DataProcessor()
     context = ('local.crt', 'local.key')
-    serve(app, host="192.168.0.6", port=8088)
+    serve(app, host="localhost", port=8088)
