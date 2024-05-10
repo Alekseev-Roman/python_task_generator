@@ -7,7 +7,7 @@ module.exports = {
   devServer: {
     proxy: {
       "^/backend": {
-        target: `http://192.168.0.6:8088/`,
+        target: `http://localhost:8088/`,
         pathRewrite: {'^/backend': ''},
         ws: true,
         changeOrigin: true

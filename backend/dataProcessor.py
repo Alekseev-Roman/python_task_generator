@@ -51,8 +51,14 @@ class DataProcessor:
     def insert_task(self, task):
         return self.__db_api.insert_task(task)
 
+    def insert_type(self, type_name):
+        return self.__db_api.insert_type(type_name)
+
     def insert_topic(self, topic):
         return self.__db_api.insert_topic(topic)
+
+    def insert_coderunner(self, coderunner):
+        return self.__db_api.insert_coderunner(coderunner)
 
     def check_topic(self, topic):
         return self.__db_api.check_topic(topic)

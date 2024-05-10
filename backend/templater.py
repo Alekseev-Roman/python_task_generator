@@ -4,7 +4,7 @@ class Templater:
         Initialize Templater
         :param file_name:
         """
-        self.fileName = file_name
+        self.file_name = file_name
         self.template = None
 
         self.data = None
@@ -15,10 +15,10 @@ class Templater:
         :return:
         """
         try:
-            with open(self.fileName, 'r') as file:
+            with open(self.file_name, 'r') as file:
                 self.template = file.read()
         except FileNotFoundError:
-            print(f"Template file - {self.fileName} wasn't found.")
+            print(f"Template file - {self.file_name} wasn't found.")
 
     def set_data(self, data):
         """

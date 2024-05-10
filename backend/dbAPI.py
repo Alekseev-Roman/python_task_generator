@@ -1,8 +1,6 @@
-import json
 import pandas as pd
 
 from dbConnector import DbConnector
-from taskCreator import TaskCreator
 
 
 class DbAPI:
@@ -15,7 +13,7 @@ class DbAPI:
         self.coderunner_task = None
         self.test_cases = None
 
-        self.__type_id = None
+        self.type_id = None
         self.task = None
         
     def check_topic(self, topic_name):
@@ -57,7 +55,7 @@ class DbAPI:
 
         key = 0
         for k in types['type_id']:
-            if int(types['type_id'][k]) == int(self.__type_id):
+            if int(types['type_id'][k]) == int(self.type_id):
                 key = k
         return True if types['type_name'][key] == 'multichoice' else False
 
@@ -77,7 +75,7 @@ class DbAPI:
         if tasks.shape[0] > 0:
             self.task = tasks.sample()
             task_id = self.task.iloc[0]['task_id']
-            self.__type_id = self.task.iloc[0]['type_id']
+            self.type_id = self.task.iloc[0]['type_id']
 
             if self.is_multichoice():
                 self.multichoice_task = pd.read_sql(
@@ -123,7 +121,7 @@ class DbAPI:
         )
 
         if self.task.shape[0] > 0:
-            self.__type_id = self.task.iloc[0]['type_id']
+            self.type_id = self.task.iloc[0]['type_id']
 
             if self.is_multichoice():
                 self.multichoice_task = pd.read_sql(
@@ -400,65 +398,84 @@ class DbAPI:
         :param task: Dictionary with data of task
         :return: False or True
         """
-        try:
-            new_task_df = pd.DataFrame({
-                'topic_id': task['topic_id'],
-                'type_id': task['type_id'],
-                'difficulty': task['difficulty'],
-                'question_name': task['question_name'],
-                'question_text': task['question_text']
-            })
-            new_task_df.to_sql(name='task', con=self.__conn, if_exists='append', index_label='task_id', index=False)
-            task_id = pd.read_sql(
-                f"SELECT task_id "
-                f"FROM task "
-                f"WHERE topic_id = {task['topic_id'][0]} AND type_id = {task['type_id'][0]} AND "
-                f"difficulty = {task['difficulty'][0]} AND question_name = '{task['question_name'][0]}';",
-                self.__conn
-            )['task_id'].to_list()[-1]
-
-            self.__type_id = task['type_id'][0]
-
-            if self.is_multichoice():
-                new_multichoice_task_df = pd.DataFrame({
-                    'task_id': task_id,
-                    'penalty': task['penalty']
-                })
-                new_multichoice_task_df.to_sql(name='multichoice_task', con=self.__conn, if_exists='append',
-                                               index_label='task_id', index=False)
-                for answer in task['answers']:
-                    new_multichoice_answer_df = pd.DataFrame({
-                        'task_id': task_id,
-                        'answer_fraction': answer['answer_fraction'],
-                        'answer': answer['answer']
-                    })
-                    new_multichoice_answer_df.to_sql(name='multichoice_answer', con=self.__conn, if_exists='append',
-                                                     index_label='multichoice_answer_id', index=False)
-
+        # try:
+        if 'type_id' not in task:
+            types = self.get_types()
+            types_id_by_name = {}
+            for key in types['type_name']:
+                types_id_by_name[types['type_name'][key]] = types['type_id'][key]
+            if 'answers' in task:
+                task['type_id'] = [types_id_by_name['multichoice']]
             else:
-                new_coderunner_task_df = pd.DataFrame({
-                    'task_id': task_id,
-                    'template': task['template'],
-                    'template_params': task['template_params'],
-                    'answer_preload': task['answer_preload'],
-                    'coderunner_id': task['coderunner_id']
-                })
-                new_coderunner_task_df.to_sql(name='coderunner_task', con=self.__conn, if_exists='append',
-                                              index_label='task_id', index=False)
-                for test_case in task['test_case']:
-                    new_test_case_df = pd.DataFrame({
-                        'task_id': task_id,
-                        'use_as_example': test_case['use_as_example'],
-                        'test_code': test_case['test_code'],
-                        'stdin': test_case['stdin'],
-                        'expected': test_case['expected']
-                    })
-                    new_test_case_df.to_sql(name='test_case', con=self.__conn, if_exists='append',
-                                            index_label='test_case_id', index=False)
+                task['type_id'] = [types_id_by_name['coderunner']]
 
-        except Exception as error:
-            print(error)
-            return False
+        if 'coderunner_name' in task and 'coderunner_id' not in task:
+            coderunners = self.get_coderunners()
+            if task['coderunner_name'] not in coderunners.values():
+                task['coderunner_name'] = ['python3']
+            for index, value in coderunners.items():
+                if value == task['coderunner_name'][0]:
+                    task['coderunner_id'] = [index]
+                    break
+
+        new_task_df = pd.DataFrame({
+            'topic_id': task['topic_id'],
+            'type_id': task['type_id'],
+            'difficulty': task['difficulty'],
+            'question_name': task['question_name'],
+            'question_text': task['question_text']
+        })
+        new_task_df.to_sql(name='task', con=self.__conn, if_exists='append', index_label='task_id', index=False)
+        task_id = pd.read_sql(
+            f"SELECT task_id "
+            f"FROM task "
+            f"WHERE topic_id = {task['topic_id'][0]} AND type_id = {task['type_id'][0]} AND "
+            f"difficulty = {task['difficulty'][0]} AND question_name = '{task['question_name'][0]}';",
+            self.__conn
+        )['task_id'].to_list()[-1]
+
+        self.type_id = task['type_id'][0]
+
+        if self.is_multichoice():
+            new_multichoice_task_df = pd.DataFrame({
+                'task_id': task_id,
+                'penalty': task['penalty']
+            })
+            new_multichoice_task_df.to_sql(name='multichoice_task', con=self.__conn, if_exists='append',
+                                           index_label='task_id', index=False)
+            for answer in task['answers']:
+                new_multichoice_answer_df = pd.DataFrame({
+                    'task_id': task_id,
+                    'answer_fraction': answer['answer_fraction'],
+                    'answer': answer['answer']
+                })
+                new_multichoice_answer_df.to_sql(name='multichoice_answer', con=self.__conn, if_exists='append',
+                                                 index_label='multichoice_answer_id', index=False)
+
+        else:
+            new_coderunner_task_df = pd.DataFrame({
+                'task_id': task_id,
+                'template': task['template'],
+                'template_params': task['template_params'],
+                'answer_preload': task['answer_preload'],
+                'coderunner_id': task['coderunner_id']
+            })
+            new_coderunner_task_df.to_sql(name='coderunner_task', con=self.__conn, if_exists='append',
+                                          index_label='task_id', index=False)
+            for test_case in task['test_case']:
+                new_test_case_df = pd.DataFrame({
+                    'task_id': task_id,
+                    'use_as_example': test_case['use_as_example'],
+                    'test_code': test_case['test_code'],
+                    'stdin': test_case['stdin'],
+                    'expected': test_case['expected']
+                })
+                new_test_case_df.to_sql(name='test_case', con=self.__conn, if_exists='append',
+                                        index_label='test_case_id', index=False)
+
+        # except Exception as error:
+        #     print(error)
+        #     return False
         return True
 
     def delete_topic_by_id(self, topic_id):
